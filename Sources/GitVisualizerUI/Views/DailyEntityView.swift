@@ -335,11 +335,13 @@ public struct DailyEntityView: View {
             leaf.addQuadCurve(to: CGPoint(x: body.midX, y: body.minY), control: CGPoint(x: body.midX + body.width * 0.3, y: body.minY - body.height * 0.05))
             context.fill(leaf, with: .color(.green.opacity(0.8)))
         case .scarf:
+            // Sits on the bottom edge — any higher and it covers the mouth,
+            // which accessories are drawn after.
             let scarf = CGRect(
-                x: body.midX - body.width * 0.34,
-                y: body.maxY - body.height * 0.22,
-                width: body.width * 0.68,
-                height: body.height * 0.14
+                x: body.midX - body.width * 0.36,
+                y: body.maxY - body.height * 0.16,
+                width: body.width * 0.72,
+                height: body.height * 0.11
             )
             context.fill(Path(roundedRect: scarf, cornerRadius: scarf.height / 2), with: .color(color))
         case .hat:

@@ -824,7 +824,8 @@
       }
     } else if (entity.species === "capybara") {
       for (const side of [-1, 1]) {
-        ellipse(ctx, body.midX + side * body.w * 0.34, body.minY + body.w * 0.03, body.w * 0.07, body.w * 0.07);
+        const earY = body.minY - body.h * 0.04 + body.w * 0.07;
+        ellipse(ctx, body.midX + side * body.w * 0.34, earY, body.w * 0.07, body.w * 0.07);
         ctx.fill();
       }
     } else if (entity.species === "bird") {
@@ -936,10 +937,12 @@
         break;
       }
       case "scarf": {
-        const sx = body.midX - body.w * 0.34;
-        const sy = body.maxY - body.h * 0.22;
-        const sw = body.w * 0.68;
-        const sh = body.h * 0.14;
+        // Sits on the bottom edge — any higher and it covers the mouth,
+        // which accessories are drawn after.
+        const sx = body.midX - body.w * 0.36;
+        const sy = body.maxY - body.h * 0.16;
+        const sw = body.w * 0.72;
+        const sh = body.h * 0.11;
         ctx.beginPath();
         ctx.roundRect(sx, sy, sw, sh, sh / 2);
         ctx.fill();
