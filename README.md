@@ -28,10 +28,41 @@ Unlike VSCode's embedded git integration or heavy Electron-based tools, Git Visu
 - ✅ **File Health Tracking**: Find volatile files, hotspots, and tightly coupled code
 - ✅ **Repository Analytics**: Contributors, activity trends, commit distribution
 
+#### The Daily Entity
+A small companion that lives in the corner of the app and reacts to your work.
+
+- ✅ **Seeded by the date**: the day is hashed into a seed that picks species, name, palette, and accessories. Same day, same creature, on every machine — a new one tomorrow. No image assets ship with the app; it's all drawn procedurally.
+- ✅ **Mood read from your repo**: the ontology engine's commit classification drives the state. Features shipped → celebrating. Bugfixes → focused. A revert → concerned. Nothing in 24h → asleep.
+- ✅ **Six species, seven moods**: capybara, blob, cat, bird, ghost, fox — each with idle, waving, celebrating, focused, thinking, concerned, and sleeping states.
+
+Character concept owes a debt to the pixel companions in [hermes-pixel-office](https://github.com/teknium1/hermes-pixel-office).
+
+```bash
+git-visualizer entity .
+```
+
+```
+      .-----.
+     ( ^ o ^ )
+      `~~~~~'
+
+   Tara the blob
+   features shipped!
+
+   day        2026-08-25
+   accessory  scarf
+   pattern    plain
+   energy     ######.... 60%
+   commits    6 in the last 24h
+```
+
+**[→ Live preview in the browser](docs/entity-preview.html)** — pick a day, flip through the moods, watch it jump. The preview reimplements the seed hash and drawing code in JavaScript so it matches the Swift app exactly (`DailyEntityTests` pins the shared hash values).
+
 #### CLI Commands
 - `git-visualizer analyze <path>` - Deep repository analysis
 - `git-visualizer status <path>` - Quick status check
 - `git-visualizer health <path>` - Repository health report
+- `git-visualizer entity <path>` - Meet today's companion
 
 ### Phase 2: SwiftUI App (Upcoming)
 - Native macOS app with three-pane layout
@@ -129,12 +160,14 @@ Activity Trends:
 ```
 Sources/
 ├── GitVisualizer/
-│   └── main.swift              # CLI entry point & commands
+│   └── GitVisualizerCLI.swift  # CLI entry point & commands
 ├── GitVisualizerCore/
 │   ├── Models/
 │   │   ├── Commit.swift        # Commit + FileChange models
 │   │   ├── Branch.swift        # Branch model
 │   │   └── Repository.swift    # Repository model
+│   ├── Entity/
+│   │   └── DailyEntity.swift   # Daily companion: generation + mood
 │   ├── GitCore/
 │   │   ├── GitCommandRunner.swift    # Git CLI wrapper
 │   │   └── GitRepositoryManager.swift # Fetch commits, branches
@@ -148,7 +181,13 @@ Sources/
 │       ├── ClaudeProvider.swift  # Anthropic API integration
 │       └── GrokProvider.swift    # xAI Grok integration
 └── GitVisualizerUI/
-    └── Views/                   # SwiftUI views (Phase 2)
+    └── Views/
+        └── DailyEntityView.swift # Canvas-drawn companion + animation
+```
+
+The preview page lives at `docs/entity-preview.html` and mirrors the Swift
+implementation in JavaScript, so design changes can be tried in a browser
+before porting them back to `DailyEntityView.swift`.
 ```
 
 ### Data Flow

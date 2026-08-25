@@ -1,0 +1,1138 @@
+<title>Daily Entity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root {
+    --ground: #E9EBEF;
+    --surface: #FDFDFE;
+    --surface-2: #F1F3F7;
+    --ink: #161A22;
+    --muted: #5E6675;
+    --line: #D2D7E0;
+    --accent: #9A6412;
+    --accent-soft: #F0E2C7;
+    --stage: #DFE3EA;
+
+    --display: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --step-0: 0.875rem;
+    --step-1: 1rem;
+    --step-2: 1.375rem;
+    --step-3: 2rem;
+    --step-4: clamp(2.5rem, 6vw, 3.75rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0F1218;
+      --surface: #171B23;
+      --surface-2: #1E232D;
+      --ink: #E3E7EE;
+      --muted: #8B94A5;
+      --line: #2A3140;
+      --accent: #E4A94E;
+      --accent-soft: #382D18;
+      --stage: #0A0D12;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0F1218;
+    --surface: #171B23;
+    --surface-2: #1E232D;
+    --ink: #E3E7EE;
+    --muted: #8B94A5;
+    --line: #2A3140;
+    --accent: #E4A94E;
+    --accent-soft: #382D18;
+    --stage: #0A0D12;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: var(--step-1);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: clamp(1.75rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  /* ---------- header ---------- */
+
+  header { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: var(--step-4);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lede {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--muted);
+    font-size: var(--step-2);
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+
+  /* ---------- section furniture ---------- */
+
+  section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .section-head { display: flex; flex-direction: column; gap: 0.35rem; }
+
+  h2 {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .section-note {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 64ch;
+  }
+
+  .axis {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .axis::before {
+    content: "";
+    width: 1.5rem;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ---------- hero stage ---------- */
+
+  .stage-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  @media (max-width: 760px) {
+    .stage-grid { grid-template-columns: 1fr; }
+  }
+
+  .stage {
+    position: relative;
+    background: var(--stage);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    min-height: 340px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  /* Faint ground line so the jump has something to land on. */
+  .stage::after {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 22%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line), transparent);
+  }
+
+  .stage canvas { position: relative; z-index: 1; }
+
+  .stage-hint {
+    position: absolute;
+    bottom: 0.875rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    color: var(--muted);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .spec {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .spec-name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .spec-name strong {
+    font-size: var(--step-3);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+  .spec-name span {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    color: var(--muted);
+  }
+
+  .mood-caption {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+  .mood-caption b { font-weight: 600; }
+
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+  dt { color: var(--muted); }
+  dd { margin: 0; text-align: right; }
+
+  .swatches { display: flex; gap: 0.35rem; justify-content: flex-end; }
+  .swatch {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 3px;
+    border: 1px solid rgba(128,128,128,0.35);
+  }
+
+  pre.ascii {
+    margin: 0;
+    padding: 0.75rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--ink);
+    overflow-x: auto;
+  }
+
+  /* ---------- controls ---------- */
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    align-items: center;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+  label {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  input[type="date"] {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  input[type="range"] { width: 140px; accent-color: var(--accent); }
+
+  button {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  :is(button, input, a):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .mood-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  /* ---------- strips ---------- */
+
+  .strip {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  @media (max-width: 760px) { .strip { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (max-width: 420px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .cell {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.5rem 0.35rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    text-align: center;
+  }
+  .cell.is-current { border-color: var(--accent); }
+
+  .cell-label {
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .cell-sub {
+    font-family: var(--mono);
+    font-size: 0.5625rem;
+    color: var(--muted);
+    line-height: 1.2;
+  }
+
+  /* ---------- mapping table ---------- */
+
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step-0);
+    min-width: 480px;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  td.mood-cell { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); white-space: nowrap; }
+  td code {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    background: var(--surface-2);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+  }
+  tbody tr:last-child :is(th, td) { border-bottom: none; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+    color: var(--muted);
+    font-size: var(--step-0);
+  }
+  footer a { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage-hint { display: none; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Git Visualizer &middot; companion spec</p>
+    <h1>Daily Entity</h1>
+    <p class="lede">
+      A companion that shows up in the corner of the app. Who it is comes from the date.
+      How it feels comes from what your repository actually did today.
+    </p>
+  </header>
+
+  <section>
+    <div class="stage-grid">
+      <div class="stage" id="stage" role="img" aria-label="Today's animated companion">
+        <canvas id="hero" width="300" height="300"></canvas>
+        <p class="stage-hint">click to make it jump</p>
+      </div>
+
+      <div class="spec">
+        <div class="spec-name">
+          <strong id="specName">&nbsp;</strong>
+          <span id="specSpecies"></span>
+        </div>
+
+        <span class="mood-caption"><b id="specMood"></b> &mdash; <span id="specCaption"></span></span>
+
+        <dl>
+          <dt>day</dt>          <dd id="specDay"></dd>
+          <dt>seed</dt>         <dd id="specSeed"></dd>
+          <dt>palette</dt>      <dd><div class="swatches"><span class="swatch" id="swBody"></span><span class="swatch" id="swAccent"></span></div></dd>
+          <dt>accessory</dt>    <dd id="specAccessory"></dd>
+          <dt>pattern</dt>      <dd id="specPattern"></dd>
+          <dt>roundness</dt>    <dd id="specRoundness"></dd>
+          <dt>eye size</dt>     <dd id="specEye"></dd>
+          <dt>energy</dt>       <dd id="specEnergy"></dd>
+        </dl>
+
+        <pre class="ascii" id="ascii" aria-label="Terminal rendering of the same companion"></pre>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="dayInput">day</label>
+        <input type="date" id="dayInput" value="2026-08-25">
+      </div>
+
+      <div class="field">
+        <label for="energyInput">energy</label>
+        <input type="range" id="energyInput" min="0" max="100" value="60">
+      </div>
+
+      <div class="field" style="flex:1 1 320px;">
+        <label>mood</label>
+        <div class="mood-buttons" id="moodButtons"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="axis">Axis one &middot; the calendar</span>
+      <h2>A different companion every day</h2>
+      <p class="section-note">
+        The date is hashed into a seed, and the seed picks species, name, colours, and accessories.
+        No assets ship with the app &mdash; everything here is drawn from the seed. The same date gives
+        the same creature on every machine, so you and a teammate see the same one.
+      </p>
+    </div>
+    <div class="strip" id="dayStrip"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="axis">Axis two &middot; the repository</span>
+      <h2>One companion, seven moods</h2>
+      <p class="section-note">
+        Mood is read from the last 24 hours of commits by the same ontology engine that
+        classifies commit intent. Appearance is held fixed here so only the state changes.
+      </p>
+    </div>
+    <div class="strip" id="moodStrip"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>How commits become moods</h2>
+      <p class="section-note">Evaluated top to bottom &mdash; the first rule that matches wins.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>When</th><th>Mood</th><th>What you see</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nothing committed in 24 hours</td><td class="mood-cell">sleeping</td><td>Eyes closed, slow breathing, stays on the ground</td></tr>
+          <tr><td>A <code>revert</code>, or clearly negative sentiment</td><td class="mood-cell">concerned</td><td>Worried mouth and a sweat drop</td></tr>
+          <tr><td>Mostly <code>feat</code> commits</td><td class="mood-cell">celebrating</td><td>Repeated hops with a hang at the top</td></tr>
+          <tr><td>Mostly <code>fix</code> commits</td><td class="mood-cell">focused</td><td>Narrowed eyes, tight determined bobs</td></tr>
+          <tr><td>Mostly <code>refactor</code> commits</td><td class="mood-cell">thinking</td><td>Slow drift, eyes wandering</td></tr>
+          <tr><td>Commits landed, no clear majority</td><td class="mood-cell">waving</td><td>A gentle greeting bob</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Preview of <code>DailyEntity.swift</code> and <code>DailyEntityView.swift</code>. The seed hash,
+      trait generation, and drawing code here mirror the Swift implementation, so what you see is what
+      the app renders. Character concept owes a debt to the pixel companions in
+      <a href="https://github.com/teknium1/hermes-pixel-office">hermes-pixel-office</a>.
+    </p>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // Deterministic generation — mirrors DailyEntity.swift exactly.
+  // ---------------------------------------------------------------
+
+  const M = 0xFFFFFFFF;
+
+  function fnv1a(str) {
+    let hash = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      hash ^= str.charCodeAt(i);
+      hash = Math.imul(hash, 16777619) >>> 0;
+    }
+    return hash >>> 0;
+  }
+
+  function makeRng(seed) {
+    let state = seed === 0 ? 0x9E3779B9 : seed >>> 0;
+    const next = () => {
+      state ^= (state << 13) & M;
+      state >>>= 0;
+      state ^= state >>> 17;
+      state ^= (state << 5) & M;
+      state >>>= 0;
+      return state;
+    };
+    return {
+      next,
+      bound: (n) => next() % n,
+      unit: () => next() / M,
+    };
+  }
+
+  const SPECIES = ["capybara", "blob", "cat", "bird", "ghost", "fox"];
+  const FIRST = ["Do","Pi","Nyx","Ka","Mo","Zu","Bo","Ru","Ta","Vi","Ha","Lu"];
+  const LAST  = ["bby","pin","ra","zu","mo","na","ko","li","bo","sha","ka","ni"];
+  const ACCESSORIES = ["none","leaf","scarf","hat","antenna"];
+  const PATTERNS = ["plain","spots","stripes","belly"];
+
+  const MOODS = ["idle","waving","celebrating","focused","thinking","concerned","sleeping"];
+
+  const FACES = {
+    idle:        "o w o",
+    waving:      "^ w ^",
+    celebrating: "^ o ^",
+    focused:     "> _ <",
+    thinking:    "- . -",
+    concerned:   "; _ ;",
+    sleeping:    "- z -",
+  };
+
+  const CAPTIONS = {
+    idle:        "hanging around",
+    waving:      "says hi",
+    celebrating: "features shipped!",
+    focused:     "squashing bugs",
+    thinking:    "pondering the refactor",
+    concerned:   "something got reverted",
+    sleeping:    "no commits today",
+  };
+
+  const SPRITES = {
+    capybara: ["  ,-------,", " ( %@  )", "  `-u---u-'"],
+    blob:     ["   .-----.", "  ( %@ )", "   `~~~~~'"],
+    cat:      ["   /\\_/\\", "  ( %@ )", "   >  ^  <"],
+    bird:     ["    .--.", "  ( %@ )", "   ^ vv ^"],
+    ghost:    ["   .-----.", "  ( %@ )", "   ~^~^~^~"],
+    fox:      ["  /\\     /\\", " ( %@  )", "   \\  v  /"],
+  };
+
+  function entityForDay(dayKey) {
+    const seed = fnv1a(dayKey);
+    const rng = makeRng(seed);
+
+    const species = SPECIES[rng.bound(SPECIES.length)];
+    const name = FIRST[rng.bound(FIRST.length)] + LAST[rng.bound(LAST.length)];
+
+    const hue = rng.bound(360);
+    const accentHue = (hue + 40 + rng.bound(120)) % 360;
+    const saturation = 0.45 + rng.unit() * 0.35;
+    const lightness = 0.55 + rng.unit() * 0.2;
+
+    const roundness = 0.35 + rng.unit() * 0.6;
+    const eyeSize = 0.4 + rng.unit() * 0.5;
+    const accessory = ACCESSORIES[rng.bound(ACCESSORIES.length)];
+    const pattern = PATTERNS[rng.bound(PATTERNS.length)];
+
+    return {
+      dayKey, seed, species, name,
+      palette: { hue, accentHue, saturation, lightness },
+      traits: { roundness, eyeSize, accessory, pattern },
+      mood: "idle",
+      energy: 0.3,
+    };
+  }
+
+  function asciiSprite(entity) {
+    return SPRITES[entity.species]
+      .map((line) => line.replace("%@", FACES[entity.mood]))
+      .join("\n");
+  }
+
+  // SwiftUI's Color(hue:saturation:brightness:) is HSB, not CSS HSL —
+  // convert properly so the preview matches the app.
+  function hsb(h, s, b) {
+    h = ((h % 360) + 360) % 360;
+    s = Math.min(Math.max(s, 0), 1);
+    b = Math.min(Math.max(b, 0), 1);
+    const c = b * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = b - c;
+    let r = 0, g = 0, bl = 0;
+    if (h < 60)       { r = c; g = x; }
+    else if (h < 120) { r = x; g = c; }
+    else if (h < 180) { g = c; bl = x; }
+    else if (h < 240) { g = x; bl = c; }
+    else if (h < 300) { r = x; bl = c; }
+    else              { r = c; bl = x; }
+    const to255 = (v) => Math.round((v + m) * 255);
+    return `rgb(${to255(r)}, ${to255(g)}, ${to255(bl)})`;
+  }
+
+  const bodyColor = (e, lighten = 0) =>
+    hsb(e.palette.hue, e.palette.saturation, e.palette.lightness + lighten);
+  const accentColor = (e, lighten = 0) =>
+    hsb(e.palette.accentHue, Math.min(e.palette.saturation + 0.1, 1), e.palette.lightness + lighten);
+
+  // ---------------------------------------------------------------
+  // Motion — mirrors DailyEntityView.swift.
+  // ---------------------------------------------------------------
+
+  function bounce(entity, time) {
+    const speed = 1.2 + entity.energy * 2.0;
+    const phase = time * speed;
+    switch (entity.mood) {
+      case "sleeping":    return Math.sin(phase * 0.5) * 1.5;
+      case "celebrating": {
+        const hop = Math.abs(Math.sin(phase * 2.2));
+        return -hop * hop * 18 * (0.5 + entity.energy);
+      }
+      case "waving":      return Math.sin(phase * 1.6) * 4;
+      case "focused":     return Math.sin(phase * 3.0) * 2.5;
+      case "thinking":    return Math.sin(phase * 0.7) * 3;
+      case "concerned":   return Math.sin(phase * 0.9) * 1.5;
+      default:            return Math.sin(phase) * 5;
+    }
+  }
+
+  function drift(entity, time, width) {
+    if (entity.mood === "sleeping") return 0;
+    const range = width * 0.12 * (0.4 + entity.energy);
+    return Math.sin(time * 0.4) * range;
+  }
+
+  // ---------------------------------------------------------------
+  // Drawing
+  // ---------------------------------------------------------------
+
+  function draw(canvas, entity, time) {
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.width / dpr;
+    const h = canvas.height / dpr;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    const unit = Math.min(w, h);
+    const lift = -bounce(entity, time);
+    const dx = drift(entity, time, w);
+    const cx = w / 2 + dx;
+    const cy = h * 0.62 + bounce(entity, time);
+
+    // Shadow tightens as it rises — that is what reads as airborne.
+    const tightening = Math.max(0.45, 1 - lift / 40);
+    const shadowW = unit * 0.42 * tightening;
+    ctx.fillStyle = `rgba(0,0,0,${0.18 * tightening})`;
+    ellipse(ctx, w / 2 + dx, h * 0.84, shadowW / 2, unit * 0.035 * tightening);
+    ctx.fill();
+
+    // Squash and stretch.
+    const factor = 1 + lift / 90;
+    const bw = unit * 0.52 * (0.85 + entity.traits.roundness * 0.3) / factor;
+    const bh = unit * 0.46 * (1.15 - entity.traits.roundness * 0.25) * factor;
+    const body = { x: cx - bw / 2, y: cy - bh / 2, w: bw, h: bh };
+    body.midX = cx; body.midY = cy;
+    body.minY = body.y; body.maxY = body.y + bh;
+    body.minX = body.x; body.maxX = body.x + bw;
+
+    drawEars(ctx, entity, body, unit, time);
+    drawBody(ctx, entity, body);
+    drawPattern(ctx, entity, body);
+    drawFace(ctx, entity, body, unit, time);
+    drawAccessory(ctx, entity, body, unit);
+  }
+
+  function ellipse(ctx, cx, cy, rx, ry) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, Math.max(rx, 0.01), Math.max(ry, 0.01), 0, 0, Math.PI * 2);
+  }
+
+  function roundRect(ctx, r, radius) {
+    ctx.beginPath();
+    ctx.roundRect(r.x, r.y, r.w, r.h, radius);
+  }
+
+  function drawBody(ctx, entity, body) {
+    if (entity.species === "ghost") {
+      ghostPath(ctx, body);
+    } else if (entity.species === "bird") {
+      ellipse(ctx, body.midX, body.midY, body.w * 0.42, body.h / 2);
+    } else {
+      roundRect(ctx, body, body.h * (0.3 + entity.traits.roundness * 0.2));
+    }
+
+    const grad = ctx.createLinearGradient(body.midX, body.minY, body.midX, body.maxY);
+    grad.addColorStop(0, bodyColor(entity, 0.1));
+    grad.addColorStop(1, bodyColor(entity, -0.08));
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = bodyColor(entity, -0.3);
+    ctx.lineWidth = body.w * 0.02;
+    ctx.stroke();
+  }
+
+  function ghostPath(ctx, body) {
+    const wave = body.h * 0.12;
+    ctx.beginPath();
+    ctx.arc(body.midX, body.midY, body.w / 2, Math.PI, 0, false);
+    ctx.lineTo(body.maxX, body.maxY - wave);
+    const step = body.w / 3;
+    for (let i = 0; i < 3; i++) {
+      const x = body.maxX - step * i;
+      ctx.quadraticCurveTo(x - step / 2, body.maxY + wave, x - step, body.maxY - wave);
+    }
+    ctx.closePath();
+  }
+
+  function drawPattern(ctx, entity, body) {
+    const accent = accentColor(entity);
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = accent;
+    ctx.strokeStyle = accent;
+
+    switch (entity.traits.pattern) {
+      case "belly":
+        ellipse(ctx, body.midX, body.midY + body.h * 0.21, body.w * 0.22, body.h * 0.21);
+        ctx.fill();
+        break;
+      case "spots":
+        for (let i = 0; i < 3; i++) {
+          const angle = i * 2.4;
+          ellipse(ctx,
+            body.midX + Math.cos(angle) * body.w * 0.24,
+            body.midY + Math.sin(angle) * body.h * 0.22 + body.w * 0.06,
+            body.w * 0.06, body.w * 0.06);
+          ctx.fill();
+        }
+        break;
+      case "stripes":
+        ctx.lineWidth = body.h * 0.05;
+        for (let i = 1; i <= 2; i++) {
+          const y = body.minY + body.h * (0.45 + i * 0.18);
+          ctx.beginPath();
+          ctx.moveTo(body.minX + body.w * 0.2, y);
+          ctx.lineTo(body.maxX - body.w * 0.2, y);
+          ctx.stroke();
+        }
+        break;
+    }
+    ctx.restore();
+  }
+
+  function drawEars(ctx, entity, body, unit, time) {
+    ctx.fillStyle = accentColor(entity);
+    ctx.strokeStyle = accentColor(entity);
+
+    if (entity.species === "cat" || entity.species === "fox") {
+      const isFox = entity.species === "fox";
+      const ew = body.w * (isFox ? 0.3 : 0.24);
+      const eh = body.h * (isFox ? 0.5 : 0.38);
+      for (const side of [-1, 1]) {
+        const baseX = body.midX + side * body.w * 0.28;
+        ctx.beginPath();
+        ctx.moveTo(baseX - ew / 2, body.minY + body.h * 0.15);
+        ctx.lineTo(baseX, body.minY - eh * 0.55);
+        ctx.lineTo(baseX + ew / 2, body.minY + body.h * 0.15);
+        ctx.closePath();
+        ctx.fill();
+      }
+    } else if (entity.species === "capybara") {
+      for (const side of [-1, 1]) {
+        ellipse(ctx, body.midX + side * body.w * 0.34, body.minY + body.w * 0.03, body.w * 0.07, body.w * 0.07);
+        ctx.fill();
+      }
+    } else if (entity.species === "bird") {
+      const sway = Math.sin(time * 2) * unit * 0.02;
+      ctx.lineWidth = body.w * 0.06;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(body.midX, body.minY);
+      ctx.quadraticCurveTo(
+        body.midX + body.w * 0.18, body.minY - body.h * 0.2,
+        body.midX + sway, body.minY - body.h * 0.4
+      );
+      ctx.stroke();
+      ctx.lineCap = "butt";
+    }
+  }
+
+  function drawFace(ctx, entity, body, unit, time) {
+    const eyeR = unit * 0.035 * (0.7 + entity.traits.eyeSize * 0.8);
+    const eyeY = body.midY - body.h * 0.08;
+    const eyeOffset = body.w * 0.2;
+    const ink = "rgba(0,0,0,0.82)";
+
+    const blinking = Math.sin(time * 0.9) > 0.97;
+    const closed = entity.mood === "sleeping" || blinking;
+
+    ctx.fillStyle = ink;
+    ctx.strokeStyle = ink;
+
+    for (const side of [-1, 1]) {
+      const x = body.midX + side * eyeOffset;
+      if (closed) {
+        ctx.lineWidth = eyeR * 0.45;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(x - eyeR, eyeY);
+        ctx.quadraticCurveTo(x, eyeY + eyeR * 0.8, x + eyeR, eyeY);
+        ctx.stroke();
+        ctx.lineCap = "butt";
+      } else if (entity.mood === "focused") {
+        ctx.beginPath();
+        ctx.roundRect(x - eyeR, eyeY - eyeR * 0.35, eyeR * 2, eyeR * 0.7, eyeR * 0.35);
+        ctx.fill();
+      } else {
+        ellipse(ctx, x, eyeY, eyeR, eyeR);
+        ctx.fill();
+        const look = entity.mood === "thinking" ? Math.sin(time * 0.6) * eyeR * 0.3 : 0;
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ellipse(ctx, x + eyeR * 0.2 + look, eyeY - eyeR * 0.2, eyeR * 0.35, eyeR * 0.35);
+        ctx.fill();
+        ctx.fillStyle = ink;
+      }
+    }
+
+    drawMouth(ctx, entity, body, unit, ink);
+
+    if (entity.mood === "concerned") {
+      ctx.fillStyle = "rgba(90,200,225,0.75)";
+      ellipse(ctx, body.midX + body.w * 0.36, body.minY + body.h * 0.19, unit * 0.02, unit * 0.028);
+      ctx.fill();
+    }
+  }
+
+  function drawMouth(ctx, entity, body, unit, ink) {
+    const mouthY = body.midY + body.h * 0.16;
+    const w = body.w * 0.16;
+    ctx.fillStyle = ink;
+    ctx.strokeStyle = ink;
+
+    if (entity.mood === "celebrating") {
+      ellipse(ctx, body.midX, mouthY + w * 0.3, w * 0.6, w * 0.5);
+      ctx.fill();
+      return;
+    }
+
+    ctx.lineWidth = unit * 0.018;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    if (entity.mood === "concerned") {
+      ctx.moveTo(body.midX - w, mouthY + w * 0.35);
+      ctx.quadraticCurveTo(body.midX, mouthY - w * 0.3, body.midX + w, mouthY + w * 0.35);
+    } else if (entity.mood === "sleeping" || entity.mood === "thinking") {
+      ctx.moveTo(body.midX - w * 0.5, mouthY);
+      ctx.lineTo(body.midX + w * 0.5, mouthY);
+    } else {
+      ctx.moveTo(body.midX - w, mouthY);
+      ctx.quadraticCurveTo(body.midX, mouthY + w * 0.9, body.midX + w, mouthY);
+    }
+    ctx.stroke();
+    ctx.lineCap = "butt";
+  }
+
+  function drawAccessory(ctx, entity, body, unit) {
+    const color = accentColor(entity, -0.15);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+
+    switch (entity.traits.accessory) {
+      case "leaf": {
+        ctx.fillStyle = "rgba(96,168,86,0.85)";
+        const tipX = body.midX + body.w * 0.3;
+        const tipY = body.minY - body.h * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(body.midX, body.minY);
+        ctx.quadraticCurveTo(body.midX + body.w * 0.05, body.minY - body.h * 0.25, tipX, tipY);
+        ctx.quadraticCurveTo(body.midX + body.w * 0.3, body.minY - body.h * 0.05, body.midX, body.minY);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case "scarf": {
+        const sx = body.midX - body.w * 0.34;
+        const sy = body.maxY - body.h * 0.22;
+        const sw = body.w * 0.68;
+        const sh = body.h * 0.14;
+        ctx.beginPath();
+        ctx.roundRect(sx, sy, sw, sh, sh / 2);
+        ctx.fill();
+        break;
+      }
+      case "hat": {
+        ctx.beginPath();
+        ctx.moveTo(body.midX - body.w * 0.3, body.minY + body.h * 0.06);
+        ctx.lineTo(body.midX, body.minY - body.h * 0.34);
+        ctx.lineTo(body.midX + body.w * 0.3, body.minY + body.h * 0.06);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case "antenna": {
+        ctx.lineWidth = unit * 0.015;
+        ctx.beginPath();
+        ctx.moveTo(body.midX, body.minY);
+        ctx.lineTo(body.midX, body.minY - body.h * 0.32);
+        ctx.stroke();
+        ellipse(ctx, body.midX, body.minY - body.h * 0.32, unit * 0.035, unit * 0.035);
+        ctx.fill();
+        break;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Page wiring
+  // ---------------------------------------------------------------
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function sizeCanvas(canvas, cssSize) {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = cssSize + "px";
+    canvas.style.height = cssSize + "px";
+    canvas.width = cssSize * dpr;
+    canvas.height = cssSize * dpr;
+  }
+
+  const heroCanvas = document.getElementById("hero");
+  sizeCanvas(heroCanvas, 300);
+
+  let current = entityForDay("2026-08-25");
+  current.mood = "celebrating";
+  current.energy = 0.6;
+
+  let jumpImpulseUntil = 0;
+
+  function renderSpec() {
+    document.getElementById("specName").textContent = current.name;
+    document.getElementById("specSpecies").textContent = "the " + current.species;
+    document.getElementById("specMood").textContent = current.mood;
+    document.getElementById("specCaption").textContent = CAPTIONS[current.mood];
+    document.getElementById("specDay").textContent = current.dayKey;
+    document.getElementById("specSeed").textContent = "0x" + current.seed.toString(16).padStart(8, "0");
+    document.getElementById("specAccessory").textContent = current.traits.accessory;
+    document.getElementById("specPattern").textContent = current.traits.pattern;
+    document.getElementById("specRoundness").textContent = current.traits.roundness.toFixed(2);
+    document.getElementById("specEye").textContent = current.traits.eyeSize.toFixed(2);
+    document.getElementById("specEnergy").textContent = Math.round(current.energy * 100) + "%";
+    document.getElementById("swBody").style.background = bodyColor(current);
+    document.getElementById("swAccent").style.background = accentColor(current);
+    document.getElementById("ascii").textContent = asciiSprite(current);
+  }
+
+  // Mood buttons
+  const moodButtons = document.getElementById("moodButtons");
+  MOODS.forEach((mood) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = mood;
+    btn.setAttribute("aria-pressed", String(mood === current.mood));
+    btn.addEventListener("click", () => {
+      current.mood = mood;
+      [...moodButtons.children].forEach((b) =>
+        b.setAttribute("aria-pressed", String(b.textContent === mood)));
+      renderSpec();
+      renderMoodStrip();
+    });
+    moodButtons.appendChild(btn);
+  });
+
+  document.getElementById("dayInput").addEventListener("change", (e) => {
+    if (!e.target.value) return;
+    const mood = current.mood;
+    const energy = current.energy;
+    current = entityForDay(e.target.value);
+    current.mood = mood;
+    current.energy = energy;
+    renderSpec();
+    renderMoodStrip();
+    renderDayStrip();
+  });
+
+  document.getElementById("energyInput").addEventListener("input", (e) => {
+    current.energy = e.target.value / 100;
+    renderSpec();
+  });
+
+  document.getElementById("stage").addEventListener("click", () => {
+    jumpImpulseUntil = performance.now() / 1000 + 0.9;
+  });
+
+  // Day strip — appearance varies, mood held at idle.
+  function renderDayStrip() {
+    const strip = document.getElementById("dayStrip");
+    strip.innerHTML = "";
+    const base = new Date(current.dayKey + "T00:00:00Z");
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(base);
+      d.setUTCDate(d.getUTCDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      const e = entityForDay(key);
+      e.mood = "idle";
+      e.energy = 0.4;
+
+      const cell = document.createElement("div");
+      cell.className = "cell" + (i === 0 ? " is-current" : "");
+
+      const canvas = document.createElement("canvas");
+      sizeCanvas(canvas, 84);
+      draw(canvas, e, 0);
+
+      const label = document.createElement("div");
+      label.className = "cell-label";
+      label.textContent = e.name;
+
+      const sub = document.createElement("div");
+      sub.className = "cell-sub";
+      sub.textContent = key.slice(5) + " · " + e.species;
+
+      cell.append(canvas, label, sub);
+      strip.appendChild(cell);
+    }
+  }
+
+  // Mood strip — appearance held fixed, mood varies.
+  function renderMoodStrip() {
+    const strip = document.getElementById("moodStrip");
+    strip.innerHTML = "";
+
+    // Each mood is drawn at a time offset that shows its characteristic pose.
+    const poseTime = {
+      idle: 0.4, waving: 0.5, celebrating: 0.36, focused: 0.2,
+      thinking: 1.1, concerned: 0.8, sleeping: 0,
+    };
+
+    MOODS.forEach((mood) => {
+      const e = { ...current, mood, energy: 0.6 };
+
+      const cell = document.createElement("div");
+      cell.className = "cell" + (mood === current.mood ? " is-current" : "");
+
+      const canvas = document.createElement("canvas");
+      sizeCanvas(canvas, 84);
+      draw(canvas, e, poseTime[mood]);
+
+      const label = document.createElement("div");
+      label.className = "cell-label";
+      label.textContent = mood;
+
+      const sub = document.createElement("div");
+      sub.className = "cell-sub";
+      sub.textContent = FACES[mood];
+
+      cell.append(canvas, label, sub);
+      strip.appendChild(cell);
+    });
+  }
+
+  function frame() {
+    const now = performance.now() / 1000;
+    let entity = current;
+
+    // A click makes it celebrate briefly, whatever mood it is in.
+    if (now < jumpImpulseUntil) {
+      entity = { ...current, mood: "celebrating", energy: Math.max(current.energy, 0.8) };
+    }
+    draw(heroCanvas, entity, now);
+    requestAnimationFrame(frame);
+  }
+
+  renderSpec();
+  renderDayStrip();
+  renderMoodStrip();
+
+  if (reduceMotion) {
+    draw(heroCanvas, current, 0.36);
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>

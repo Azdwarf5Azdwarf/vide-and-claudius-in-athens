@@ -83,8 +83,10 @@ public struct Remote: Identifiable, Codable {
     public let id: String
     public let name: String
     public let url: String
-    public let fetchUrl: String
-    public let pushUrl: String
+    // Populated in two passes while parsing `git remote -v`, which lists the
+    // fetch and push URLs on separate lines.
+    public var fetchUrl: String
+    public var pushUrl: String
 
     public init(name: String, url: String, fetchUrl: String? = nil, pushUrl: String? = nil) {
         self.id = name
