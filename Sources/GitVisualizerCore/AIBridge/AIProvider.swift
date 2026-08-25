@@ -38,6 +38,8 @@ public class MockAIProvider: AIProvider {
     public let name = "Mock"
     public let isConfigured = true
 
+    public init() {}
+
     public func summarizeChanges(in commit: Commit) async throws -> String {
         "Mock summary: \(commit.summary)"
     }

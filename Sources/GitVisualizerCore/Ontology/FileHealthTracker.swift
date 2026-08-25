@@ -1,6 +1,8 @@
 import Foundation
 
 public class FileHealthTracker {
+    public init() {}
+
     public struct FileHealthMetrics {
         public let path: String
         public let changeCount: Int

@@ -1,6 +1,8 @@
 import Foundation
 
 public class IntentClassifier {
+    public init() {}
+
     private let intentPatterns: [CommitAnalysis.CommitIntent: [String]] = [
         .feature: ["feat", "feature", "add", "new", "implement"],
         .bugfix: ["fix", "bug", "bugfix", "patch", "hotfix", "resolve", "close"],

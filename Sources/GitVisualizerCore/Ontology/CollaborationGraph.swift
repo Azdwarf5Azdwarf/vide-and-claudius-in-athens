@@ -1,6 +1,8 @@
 import Foundation
 
 public class CollaborationGraph {
+    public init() {}
+
     public struct CollaborationMetrics {
         public let pairs: [String: Int]
         public let reviewed: [String: Int]
