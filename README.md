@@ -58,6 +58,20 @@ git-visualizer entity .
 
 **[→ Live preview in the browser](docs/entity-preview.html)** — pick a day, flip through the moods, watch it jump. The preview reimplements the seed hash and drawing code in JavaScript so it matches the Swift app exactly (`DailyEntityTests` pins the shared hash values).
 
+#### The macOS App
+```bash
+cd /path/to/any/repo
+swift run --package-path /path/to/git-visualizer GitVisualizerApp
+```
+
+Opens a three-pane window on whatever repository you launch it from:
+
+- **Sidebar** — commit/contributor counts, branches with tracking status, and a commit-intent breakdown. The daily companion sits at the bottom, reacting to the repo.
+- **Middle** — searchable commit list (by summary, author, or hash prefix), each row tagged with its classified intent.
+- **Detail** — full message, every changed file colour-coded by status, and parent commits.
+
+`⌘O` opens a different repository, `⌘R` re-reads the current one.
+
 #### CLI Commands
 - `git-visualizer analyze <path>` - Deep repository analysis
 - `git-visualizer status <path>` - Quick status check
