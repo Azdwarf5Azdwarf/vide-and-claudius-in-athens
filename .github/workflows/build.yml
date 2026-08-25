@@ -10,6 +10,10 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: GitLogParsingTests parses this repository's own log,
+          # and the default shallow clone leaves it only one commit to read.
+          fetch-depth: 0
 
       - name: Show Swift version
         run: swift --version
