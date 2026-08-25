@@ -25,9 +25,22 @@ final class RepositoryViewModel: ObservableObject {
     private let analyzer = CommitAnalyzer()
     private let classifier = IntentClassifier()
 
-    init(repositoryPath: String = FileManager.default.currentDirectoryPath) {
-        self.repositoryPath = repositoryPath
+    init(repositoryPath: String? = nil) {
+        let resolved = repositoryPath
+            ?? Self.pathFromArguments()
+            ?? FileManager.default.currentDirectoryPath
+        self.repositoryPath = URL(fileURLWithPath: resolved).standardizedFileURL.path
         self.entity = DailyEntity.forDay()
+    }
+
+    /// Lets the app be launched against a repository other than the working
+    /// directory: `journey ~/some/project`.
+    private static func pathFromArguments() -> String? {
+        CommandLine.arguments.dropFirst().first { argument in
+            var isDirectory: ObjCBool = false
+            let exists = FileManager.default.fileExists(atPath: argument, isDirectory: &isDirectory)
+            return exists && isDirectory.boolValue
+        }
     }
 
     var repositoryName: String {
@@ -126,9 +139,12 @@ final class RepositoryViewModel: ObservableObject {
         var id: String { intent.rawValue }
     }
 
+    /// Counted from the same per-commit classification the list renders, so the
+    /// sidebar totals and the row badges can never disagree.
     var intentBreakdown: [IntentCount] {
-        guard let intents = analysis?.intents else { return [] }
-        return intents
+        guard !intents.isEmpty else { return [] }
+        return intents.values
+            .reduce(into: [:]) { counts, intent in counts[intent, default: 0] += 1 }
             .sorted { $0.value > $1.value }
             .map { IntentCount(intent: $0.key, count: $0.value) }
     }
