@@ -9,17 +9,27 @@ public class GitRepositoryManager {
         self.repositoryPath = repositoryPath
     }
 
+    /// ASCII record separator. Starts each commit; cannot occur in commit text.
+    static let recordSeparator = "\u{1e}"
+    /// ASCII unit separator, between fields within one commit.
+    static let fieldSeparator = "\u{1f}"
+
+    /// Field order inside one record. `%P` is included so parents come from the
+    /// same `git log` call rather than a `rev-parse` per commit.
+    static let logFormat = [
+        "%x1e%H", "%an", "%ae", "%aI", "%P", "%s", "%b%x1f"
+    ].joined(separator: "%x1f")
+
     public func fetchCommits(limit: Int = 100) throws -> [Commit] {
-        let format = "%H%n%an%n%ae%n%aI%n%s%n%b%n--COMMIT_END--"
         let output = try runner.runCommand("git", arguments: [
             "log",
             "-\(limit)",
-            "--pretty=format:\(format)",
+            "--pretty=format:\(GitRepositoryManager.logFormat)",
             "--name-status",
             "-M"
         ])
 
-        return parseCommits(output)
+        return GitRepositoryManager.parseCommits(output)
     }
 
     public func fetchBranches() throws -> [Branch] {
@@ -85,79 +95,64 @@ public class GitRepositoryManager {
         try runner.runCommand("git", arguments: ["show", commit])
     }
 
-    private func parseCommits(_ output: String) -> [Commit] {
-        var commits: [Commit] = []
-        var currentCommitLines: [String] = []
-        var fileChanges: [FileChange] = []
-        var isParsingFiles = false
-
-        for line in output.split(separator: "\n", omittingEmptySubsequences: false).map(String.init) {
-            if line == "--COMMIT_END--" {
-                if currentCommitLines.count >= 5 {
-                    if let commit = parseCommit(lines: currentCommitLines, fileChanges: fileChanges) {
-                        commits.append(commit)
-                    }
-                }
-                currentCommitLines = []
-                fileChanges = []
-                isParsingFiles = false
-            } else if line.isEmpty {
-                isParsingFiles = true
-            } else if isParsingFiles && !line.contains("\t") && !currentCommitLines.isEmpty {
-                if let fileChange = parseFileChange(line) {
-                    fileChanges.append(fileChange)
-                }
-            } else if !isParsingFiles {
-                currentCommitLines.append(line)
-            }
-        }
-
-        return commits
+    /// Splits `git log` output into commits.
+    ///
+    /// Records are delimited by ASCII RS/US rather than a text sentinel, so a
+    /// commit message can contain blank lines, tabs, or any word without
+    /// confusing the parser. Pure and static so it can be tested against
+    /// captured fixture output with no repository present.
+    static func parseCommits(_ output: String) -> [Commit] {
+        output
+            .components(separatedBy: recordSeparator)
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .compactMap(parseRecord)
     }
 
-    private func parseCommit(lines: [String], fileChanges: [FileChange]) -> Commit? {
-        guard lines.count >= 5 else { return nil }
+    /// One record: seven `%`-fields, then the `--name-status` block that
+    /// `git log` prints after the formatted portion.
+    static func parseRecord(_ record: String) -> Commit? {
+        let fields = record.components(separatedBy: fieldSeparator)
+        guard fields.count >= 7 else { return nil }
 
-        let hash = lines[0]
-        let author = lines[1]
-        let authorEmail = lines[2]
-        let timestamp = parseISO8601Date(lines[3]) ?? Date()
-        let message = lines[4...].joined(separator: "\n")
+        let hash = fields[0].trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !hash.isEmpty else { return nil }
 
-        let parents = parseParents(hash: hash)
+        let parents = fields[4]
+            .split(separator: " ")
+            .map(String.init)
+            .filter { !$0.isEmpty }
+
+        let subject = fields[5]
+        let body = fields[6].trimmingCharacters(in: .whitespacesAndNewlines)
+        let message = body.isEmpty ? subject : "\(subject)\n\n\(body)"
+
+        let fileChanges = fields.count > 7 ? parseFileChanges(fields[7]) : []
 
         return Commit(
             hash: hash,
-            author: author,
-            authorEmail: authorEmail,
-            timestamp: timestamp,
+            author: fields[1],
+            authorEmail: fields[2],
+            timestamp: parseISO8601Date(fields[3]) ?? Date(),
             message: message,
             fileChanges: fileChanges,
             parentHashes: parents
         )
     }
 
-    private func parseParents(hash: String) -> [String] {
-        do {
-            let output = try runner.runCommand("git", arguments: ["rev-parse", "\(hash)^@"])
-            return output.split(separator: "\n").map(String.init)
-        } catch {
-            return []
+    static func parseFileChanges(_ block: String) -> [FileChange] {
+        block.split(separator: "\n").compactMap { line in
+            let columns = line.split(separator: "\t").map(String.init)
+            // "M\tpath", or "R100\told\tnew" once -M detects a rename.
+            guard columns.count >= 2,
+                  let status = parseFileStatus(columns[0]),
+                  let path = columns.last,
+                  !path.isEmpty
+            else { return nil }
+            return FileChange(path: path, status: status)
         }
     }
 
-    private func parseFileChange(_ line: String) -> FileChange? {
-        let parts = line.split(separator: "\t", maxSplits: 1).map(String.init)
-        guard parts.count >= 2 else { return nil }
-
-        let statusChar = parts[0]
-        let path = parts[1]
-
-        guard let status = parseFileStatus(statusChar) else { return nil }
-        return FileChange(path: path, status: status)
-    }
-
-    private func parseFileStatus(_ statusChar: String) -> FileChange.FileStatus? {
+    static func parseFileStatus(_ statusChar: String) -> FileChange.FileStatus? {
         switch statusChar.first {
         case "A": return .added
         case "M": return .modified
@@ -168,7 +163,7 @@ public class GitRepositoryManager {
         }
     }
 
-    private func parseISO8601Date(_ dateString: String) -> Date? {
+    static func parseISO8601Date(_ dateString: String) -> Date? {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter.date(from: dateString) ?? ISO8601DateFormatter().date(from: dateString)
