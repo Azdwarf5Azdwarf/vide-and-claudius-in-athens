@@ -9,7 +9,7 @@ Unlike VSCode's embedded git integration or heavy Electron-based tools, Git Visu
 - **Beautiful**: Clean 2D visualization with scalable 3D future
 - **Intelligent**: Extensible ontology system for understanding commit intent, team dynamics, and code health
 - **AI-Ready**: First-class Claude and Grok API integration (coming soon)
-- **Brew-Installable**: `brew tap soticnisse374-png/git-visualizer && brew install git-visualizer`
+- **Runnable from source**: `swift run GitVisualizer analyze .` — Homebrew tap is not set up yet
 
 ## Features
 
@@ -60,8 +60,13 @@ git-visualizer entity .
 
 #### The macOS App
 ```bash
-cd /path/to/any/repo
-swift run --package-path /path/to/git-visualizer GitVisualizerApp
+git-visualizer-app /path/to/any/repo
+```
+
+Without the PATH install, launch from this checkout:
+
+```bash
+swift run --package-path /path/to/vide-and-claudius-in-athens GitVisualizerApp -- /path/to/any/repo
 ```
 
 Opens a three-pane window on whatever repository you launch it from:
@@ -78,8 +83,8 @@ Opens a three-pane window on whatever repository you launch it from:
 - `git-visualizer health <path>` - Repository health report
 - `git-visualizer entity <path>` - Meet today's companion
 
-### Phase 2: SwiftUI App (Upcoming)
-- Native macOS app with three-pane layout
+### Phase 2: SwiftUI App (Current window)
+- ✅ Native macOS app with three-pane layout (`git-visualizer-app`)
 - Interactive branch graph (2D Canvas-based DAG)
 - Diff viewer with syntax highlighting
 - Real-time analysis overlays
@@ -99,21 +104,40 @@ Opens a three-pane window on whatever repository you launch it from:
 
 ## Installation
 
-### From Source
+### From this repo
 ```bash
-git clone https://github.com/soticnisse374-png/git-visualizer-for-our-host
-cd git-visualizer-for-our-host
+git clone https://github.com/Azdwarf5Azdwarf/vide-and-claudius-in-athens
+cd vide-and-claudius-in-athens
 swift build -c release
-.build/release/GitVisualizer --help
 ```
 
-### Via Homebrew (Coming Soon)
+Put the CLI and the macOS app on your PATH (symlink into `~/.local/bin`, which is already on PATH):
+
 ```bash
-brew tap soticnisse374-png/git-visualizer
-brew install git-visualizer
+ln -sf "$(pwd)/.build/release/GitVisualizer" ~/.local/bin/git-visualizer
+ln -sf "$(pwd)/.build/release/GitVisualizerApp" ~/.local/bin/git-visualizer-app
+git-visualizer --help
 ```
+
+Until those links exist, `git-visualizer` is **not** on PATH. Use `swift run GitVisualizer …` from this checkout instead.
+
+### Via Homebrew
+Not set up yet. The tap `soticnisse374-png/git-visualizer` is gone.
 
 ## Quick Start
+
+### Test it on a repo
+Point it at any local git checkout — this one, or another:
+
+```bash
+git-visualizer status .
+git-visualizer analyze . --limit 100
+git-visualizer health .
+git-visualizer entity .
+git-visualizer-app .
+```
+
+The app reads the path you pass (or the current directory). `⌘O` opens a different repository, `⌘R` re-reads the current one.
 
 ### Analyze a Repository
 ```bash
@@ -270,6 +294,7 @@ swift test
 ### Run on Your Own Repo
 ```bash
 swift run GitVisualizer analyze /path/to/this/repo
+swift run GitVisualizerApp -- /path/to/this/repo
 ```
 
 ## Roadmap
