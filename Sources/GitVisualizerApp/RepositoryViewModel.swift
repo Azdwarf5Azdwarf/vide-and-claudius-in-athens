@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import AppKit
 import GitVisualizerCore
+import GitVisualizerUI
 
 @MainActor
 final class RepositoryViewModel: ObservableObject {
@@ -20,6 +21,14 @@ final class RepositoryViewModel: ObservableObject {
     /// would re-run the collaboration scan, which is O(commits²), on every
     /// redraw of every row.
     @Published private(set) var intents: [Commit.ID: CommitAnalysis.CommitIntent] = [:]
+
+    /// Graph slice per commit, laid out once at load over the full history.
+    @Published private(set) var graphRows: [Commit.ID: CommitGraph.Row] = [:]
+
+    /// Lanes the graph column makes room for. Wider histories are clipped
+    /// rather than allowed to push the commit text out of the pane.
+    private(set) var graphLaneCount = 1
+    private static let maxGraphLanes = 10
 
     private var hasLoaded = false
     private let analyzer = CommitAnalyzer()
@@ -62,6 +71,12 @@ final class RepositoryViewModel: ObservableObject {
         }
     }
 
+    /// The graph only makes sense over unbroken history: once a search drops
+    /// rows, the lanes would no longer join up.
+    var showsGraph: Bool {
+        searchText.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
     var selectedCommit: Commit? {
         guard let selectedCommitID else { return nil }
         return commits.first { $0.id == selectedCommitID }
@@ -92,11 +107,18 @@ final class RepositoryViewModel: ObservableObject {
                         ($0.id, self.classifier.classify($0.message))
                     }
                 )
+                let rows = CommitGraph.layout(loaded.commits, paletteSize: CommitGraphCell.palette.count)
+                self.graphLaneCount = min(rows.map(\.width).max() ?? 1, Self.maxGraphLanes)
+                self.graphRows = Dictionary(
+                    uniqueKeysWithValues: zip(loaded.commits.map(\.id), rows)
+                )
             } catch {
                 self.commits = []
                 self.branches = []
                 self.analysis = nil
                 self.intents = [:]
+                self.graphRows = [:]
+                self.graphLaneCount = 1
                 self.entity = DailyEntity.forDay()
                 self.errorMessage = error.localizedDescription
             }
