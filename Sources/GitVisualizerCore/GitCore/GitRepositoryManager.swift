@@ -24,6 +24,9 @@ public class GitRepositoryManager {
         let output = try runner.runCommand("git", arguments: [
             "log",
             "-\(limit)",
+            // Children always before their parents, even with skewed clocks;
+            // `CommitGraph` relies on it.
+            "--date-order",
             "--pretty=format:\(GitRepositoryManager.logFormat)",
             "--name-status",
             "-M"

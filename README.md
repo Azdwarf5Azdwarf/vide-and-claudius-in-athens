@@ -72,7 +72,7 @@ swift run --package-path /path/to/vide-and-claudius-in-athens GitVisualizerApp -
 Opens a three-pane window on whatever repository you launch it from:
 
 - **Sidebar** — commit/contributor counts, branches with tracking status, and a commit-intent breakdown. The daily companion sits at the bottom, reacting to the repo.
-- **Middle** — searchable commit list (by summary, author, or hash prefix), each row tagged with its classified intent.
+- **Middle** — searchable commit list (by summary, author, or hash prefix), each row tagged with its classified intent. A commit graph runs down the left edge: one coloured lane per line of history, hollow rings for merges. It steps aside while a search is filtering the list.
 - **Detail** — full message, every changed file colour-coded by status, and parent commits.
 
 `⌘O` opens a different repository, `⌘R` re-reads the current one.
@@ -85,6 +85,7 @@ Opens a three-pane window on whatever repository you launch it from:
 
 ### Phase 2: SwiftUI App (Current window)
 - ✅ Native macOS app with three-pane layout (`git-visualizer-app`)
+- ✅ Commit graph in the commit list — lane layout borrowed from [SourceGit](https://github.com/sourcegit-scm/sourcegit)'s `CommitGraph`, rewritten in Swift to draw row by row
 - Interactive branch graph (2D Canvas-based DAG)
 - Diff viewer with syntax highlighting
 - Real-time analysis overlays
@@ -206,6 +207,8 @@ Sources/
 │   │   └── Repository.swift    # Repository model
 │   ├── Entity/
 │   │   └── DailyEntity.swift   # Daily companion: generation + mood
+│   ├── Graph/
+│   │   └── CommitGraph.swift   # Lane layout for the commit graph
 │   ├── GitCore/
 │   │   ├── GitCommandRunner.swift    # Git CLI wrapper
 │   │   └── GitRepositoryManager.swift # Fetch commits, branches
@@ -220,6 +223,7 @@ Sources/
 │       └── GrokProvider.swift    # xAI Grok integration
 └── GitVisualizerUI/
     └── Views/
+        ├── CommitGraphCell.swift # One row's slice of the commit graph
         └── DailyEntityView.swift # Canvas-drawn companion + animation
 ```
 

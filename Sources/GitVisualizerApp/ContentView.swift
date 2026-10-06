@@ -125,7 +125,14 @@ private struct CommitList: View {
                 )
             } else {
                 List(model.visibleCommits, selection: $model.selectedCommitID) { commit in
-                    CommitRow(commit: commit, intent: model.intent(for: commit))
+                    CommitRow(
+                        commit: commit,
+                        intent: model.intent(for: commit),
+                        graphRow: model.showsGraph ? model.graphRows[commit.id] : nil,
+                        graphWidth: CommitGraphCell.width(lanes: model.graphLaneCount)
+                    )
+                    // No vertical inset, so each row's graph slice meets the next.
+                    .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                 }
             }
         }
@@ -136,8 +143,25 @@ private struct CommitList: View {
 private struct CommitRow: View {
     let commit: Commit
     let intent: CommitAnalysis.CommitIntent
+    /// `nil` hides the graph column, e.g. while a search is filtering rows.
+    let graphRow: CommitGraph.Row?
+    let graphWidth: CGFloat
 
     var body: some View {
+        if let graphRow {
+            text
+                .padding(.leading, graphWidth + 6)
+                .background(alignment: .leading) {
+                    CommitGraphCell(row: graphRow)
+                        .frame(width: graphWidth)
+                        .clipped()
+                }
+        } else {
+            text
+        }
+    }
+
+    private var text: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 Text(intent.label.uppercased())
